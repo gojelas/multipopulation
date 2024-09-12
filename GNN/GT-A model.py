@@ -85,7 +85,7 @@ class GCNMultiLayer(nn.Module):
     
 
 class EncoderLayer(nn.Module):
-    def __init__(self,n_features, head=5, feed_forward_dim = 64, hid_linear_part_dim = 64,n_predictions = 10):
+    def __init__(self,n_features: int, head=5, feed_forward_dim = 64, hid_linear_part_dim = 64,n_predictions = 10):
         # d_model représente le nombre de features dans X et dans notre cas c'est la taille de la dimension de l'âge
         super(EncoderLayer).__init__()
         # Ici on suppose que Q, K, V in R^(T x d_model)
@@ -105,10 +105,6 @@ class EncoderLayer(nn.Module):
             nn.Linear(feed_forward_dim, n_features)
         )
 
-        self.linear_part = nn.Sequential(
-            nn.Linear(n_features, hid_linear_part_dim),
-            nn.Linear(hid_linear_part_dim, n_predictions * n_features)
-        )
     
     def initiate_parameters(self):
         nn.init.normal_(self.weight_K, mean=0.0, std=0.01)
@@ -157,22 +153,56 @@ class EncoderLayer(nn.Module):
         ffn_x = self.ffn(X)
         X = F.layer_norm(X + ffn_x)
 
-        # La partie linéaire pour faire les prévisions
-        X = self.linear_part(X)
-        X = X.view(*X.shape[:-1], self.n_predictions, self.d_model)
-
         return X
-    
 
 class Encoder(nn.Module):
-    def __init__(self, ):
+    def __init__(self, n_predictions= 10, hid_linear_part_dim = 64):
         super(Encoder).__init__()
-    
+        self.n_predictions = n_predictions
+
+        self.encod1 = EncoderLayer(n_features=self.n_features)
+        self.encod2 = EncoderLayer(n_features=self.n_features)
+        self.encod3 = EncoderLayer(n_features=self.n_features)
+
+        self.linear_part = nn.Sequential(
+            nn.Linear(self.n_features, hid_linear_part_dim),
+            nn.Linear(hid_linear_part_dim, n_predictions * self.n_features)
+        )
+
+
     def forward(self, X):
         """Forward_Encoder.
         Args:
-            X: Tensor de taille n_countries x n_times x n_ages. which represents the 
+            X: Tensor de taille n_countries x n_times x n_ages. which represents the mortality matrix by country.
         """
+        self.n_countries = X.shape[0]
+        self.n_times = X.shape[1]
+        self.n_features = X.shape[2]
+
+        # Initialisation de la matrice de prévisions
+        y = torch.FloatTensor(self.n_countries, self.n_predictions, self.n_features)
+
+
+        # Tel que l'encoder est défini c'est à appliquer pour chaque pays. Donc en partant de la matrice X, sortie du réseau
+        # de neurone graphique, X.shape = (n_countries, n_times, n_ages). Donc on applique l'encoder pour chaque pays de X 
+        # pour évaluer uniquement la dépendance spatiale.
+        for country in self.n_countries:
+            x = self.encod1(X[country])
+            x = self.encod2(x)
+            x = self.encod3(x)
+
+            # La partie linéaire pour faire les prévisions
+            x = self.linear_part(x)
+            y[country] = x.view(*x.shape[:-1], self.n_predictions, self.d_model)
+
+        
+        return y
+
+
+        
+        
+
+
 
 
 
