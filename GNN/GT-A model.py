@@ -191,7 +191,8 @@ class Encoder(nn.Module):
             x = self.encod2(x)
             x = self.encod3(x)
 
-            # La partie linéaire pour faire les prévisions
+            # La partie linéaire pour faire les prévisions pour chaque pays. La prévision étant faite jusqu'à l'horizon 
+            # de 10 années.
             x = self.linear_part(x)
             y[country] = x.view(*x.shape[:-1], self.n_predictions, self.d_model)
 
