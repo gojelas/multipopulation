@@ -28,7 +28,7 @@ class GCNLayer(nn.Module):
         
         # Il peut y avoir des cas où le biais n'est pas considéré et pour cela:
         if bias:
-            self.weight = nn.Parameter(torch.FloatTensor(out_features))
+            self.bias = nn.Parameter(torch.FloatTensor(out_features))
         else:
             self.register_parameter('bias', None)
         # pour initialiser les paramètres, la fonction d'initialisation étant définie par la suite
