@@ -21,14 +21,14 @@ import torch.nn.functional as F
 
 class GCNLayer(nn.Module):
     def __init__(self, in_features, out_features, bias= True):
-        super().__init__()
+        super(GCNLayer,self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.weight = nn.Parameter(torch.FloatTensor(in_features,out_features))
         
         # Il peut y avoir des cas où le biais n'est pas considéré et pour cela:
         if bias:
-            self.weight = nn.Parameter(torch.FloatTensor(out_features))
+            self.bias = nn.Parameter(torch.FloatTensor(out_features))
         else:
             self.register_parameter('bias', None)
         # pour initialiser les paramètres, la fonction d'initialisation étant définie par la suite
@@ -36,9 +36,9 @@ class GCNLayer(nn.Module):
 
     def init_parameters(self):
         # Une initialisation avec la distribution normale de moyenne 0 et de d'écart-type 0.01 est fait
-        nn.init.normal_(self.weight, mean=0.0, std=0.01)
+        torch.nn.init.normal_(self.weight, mean=0.0, std=0.01)
         if self.bias is not None:
-            nn.init.normal_(self.bias, mean=0.0, std=0.01)
+            torch.nn.init.normal_(self.bias, mean=0.0, std=0.01)
 
     # Définition de la fonction forward avec la matrice des caractéristiques des noeuds et d'djacence en argument
     def forward(self, node_feats, adj_matrix):
@@ -64,14 +64,16 @@ class GCNLayer(nn.Module):
 
         # out = ÃH^(l)W^(l) + b
         out = torch.mm(adj_hat, torch.mm(node_feats,self.weight))
-        if self.bias is not None:
-            out = out + self.bias
+        #if self.bias is not None:
+        #    out = out + self.bias
         
         return out
     
+    
+    
 class GCNMultiLayer(nn.Module):
-    def __init__(self, in_features, hid_features, out_features):
-        super().__init__()
+    def __init__(self, in_features, hid_features, out_features,bias=True):
+        super(GCNMultiLayer,self).__init__()
         self.gcn1 = GCNLayer(in_features, hid_features)
         self.gcn2 = GCNLayer(hid_features, out_features)
 
@@ -85,9 +87,9 @@ class GCNMultiLayer(nn.Module):
     
 
 class EncoderLayer(nn.Module):
-    def __init__(self,n_features: int, head=5, feed_forward_dim = 64, hid_linear_part_dim = 64,n_predictions = 10):
+    def __init__(self, n_features, head=5, feed_forward_dim = 64, hid_linear_part_dim = 64, n_predictions = 10):
         # d_model représente le nombre de features dans X et dans notre cas c'est la taille de la dimension de l'âge
-        super(EncoderLayer).__init__()
+        super(EncoderLayer,self).__init__()
         # Ici on suppose que Q, K, V in R^(T x d_model)
         self.d_model = n_features
         self.d_K = n_features
@@ -156,13 +158,13 @@ class EncoderLayer(nn.Module):
         return X
 
 class Encoder(nn.Module):
-    def __init__(self, n_predictions= 10, hid_linear_part_dim = 64):
-        super(Encoder).__init__()
+    def __init__(self, n_features= 100, n_predictions= 10, hid_linear_part_dim = 64):
+        super(Encoder, self).__init__()
         self.n_predictions = n_predictions
-
-        self.encod1 = EncoderLayer(n_features=self.n_features)
-        self.encod2 = EncoderLayer(n_features=self.n_features)
-        self.encod3 = EncoderLayer(n_features=self.n_features)
+        self.n_features = n_features
+        self.encod1 = EncoderLayer(n_features)
+        self.encod2 = EncoderLayer(n_features)
+        self.encod3 = EncoderLayer(n_features)
 
         self.linear_part = nn.Sequential(
             nn.Linear(self.n_features, hid_linear_part_dim),
@@ -177,7 +179,7 @@ class Encoder(nn.Module):
         """
         self.n_countries = X.shape[0]
         self.n_times = X.shape[1]
-        self.n_features = X.shape[2]
+        #self.n_features = X.shape[2]
 
         # Initialisation de la matrice de prévisions
         y = torch.FloatTensor(self.n_countries, self.n_predictions, self.n_features)
@@ -200,7 +202,18 @@ class Encoder(nn.Module):
         return y
 
 
-        
+
+class GTA_Model(nn.Module):
+    def __init__(self, in_features=100, hid_features=64, out_features=100):
+        super(GTA_Model, self).__init__()
+        self.gcn = GCNMultiLayer(in_features, hid_features, out_features)
+        self.encoder = Encoder(n_predictions=15)
+    
+    def forward(self, X, A):
+        X = self.gcn(X ,A)
+        y = self.encoder(X)
+
+        return y
         
 
 
