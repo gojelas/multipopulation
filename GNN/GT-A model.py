@@ -40,6 +40,41 @@ class GCNLayer(nn.Module):
         if self.bias is not None:
             nn.init.normal_(self.bias, mean=0.0, std=0.01)
 
+    
+    def tensor_2D_3D_product(self, A, B):
+        """
+        Returns product of matrix A and B, where A represents adjacency matrix which is squared matrix and B represents
+        features matrix which is 3D matrix.
+        """
+        a_size = A.shape
+        b_size = B.shape
+        C = torch.Tensor(b_size)
+        for i in range(a_size[0]):
+                for j in range(a_size[1]):
+                        C[i] += (A[i,j] * B[j])
+
+        return C.float()
+    
+
+    def tensor_3D_2D_product(self, X, W):
+        """
+        X is features matrix I x T x A
+        W is weight matrix A x A
+
+        Returns:
+        prod: matrix of I x T x A
+        """
+        x_shape = X.shape
+        w_shape = W.shape
+        prod = torch.Tensor(X.shape)
+
+        for j in range(w_shape[1]):
+                for i in range(w_shape[0]):
+                        prod[:,:,j] += (X[:,:,i] * W[i,j])
+        
+        return prod
+                
+
     # Définition de la fonction forward avec la matrice des caractéristiques des noeuds et d'djacence en argument
     def forward(self, node_feats, adj_matrix):
         """Forward.
@@ -63,7 +98,8 @@ class GCNLayer(nn.Module):
         adj_hat = adj_matrix / nodes_degrees
 
         # out = ÃH^(l)W^(l) + b
-        out = torch.mm(adj_hat, torch.mm(node_feats,self.weight))
+        out = self.tensor_3D_2D_product(node_feats,self.weight)
+        out = self.tensor_2D_3D_product(adj_hat,out)
         if self.bias is not None:
             out = out + self.bias
         
