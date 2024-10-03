@@ -15,8 +15,28 @@ L'algorithme de construction de la matrice d'adjence s'organise comme suit:
 
 ### Etape 2: Matrice $A_{DTW}$
 - **Entrée :**
-    - \( X \): Matrice du taux de mortalité de dimension [n_{pays}, n_{times}, n_{ages}]
+    - $X$: Matrice du taux de mortalité de taille $[n_{pays}, n_{times}, n_{ages}]$
 
 - **Calculs :**
-    1. Appliquer une ACP sur la dimension de l'âge et récupérer la première composante principale pour chaque pays. Cela transforme donc la matrice X en une matrice X' de taille [n_{pays}, n_{times}]
-    2. 
+    1. Appliquer une ACP sur la dimension de l'âge et récupérer la première composante principale pour chaque pays. Cela transforme donc la matrice X en une matrice X' de taille $[n_{pays}, n_{times}]$
+    2. Calculer la matrice de distance Dynamic Time Warping (DTW) entre les différentes séries temporelles de composantes principales de chaque pays.
+
+- **Sortie :**
+    - $A_{DTW}$: Matrice de distance DTW de taille $[n_{pays}, n_{pays}]$
+
+### Etape 3: Matrice $A_{ada}$
+- **Entrée :** 
+    - $X'$: Matrice de composante principale par pays de taille $[n_{pays}, n_{times}]$ obtenue à l'étape 2.
+
+- **Calculs :**
+    1. Appliquer la méthode des K-means sur la matrice X' pour classifier les composantes en n clusters.
+    2. Utiliser la méthode de coude et de silhouette pour déterminer le nombre n de clusters.
+    3. Choisir une liste de paramètres $(\alpha_1, \dots, \alpha_n, \beta)$; où $\alpha_i$ représente la correlation entre les pays d'une même classe et $\beta$ celle des pays de classes différentes. Cela sous-entend que $\beta$ est très proche de 0 (supposé =0.05 ici). Cela évite d'avoir des 0 dans la matrice $A_{ada}$
+    4. Construire $A_{ada}$ à partir de ces paramètres.
+
+_ **Sortie :**
+    - $A_{ada}$: Matrice de taille  contenant le clustering des pays $[n_{pays}, n_{pays}]$
+
+### Etape 4: Matrice d'adjacence:
+    - Faire le produit de Hadamard de chacune des trois matrices précédentes:
+    $$A = A_{long-lat} * A_{DTW} * A_{ada}$$
