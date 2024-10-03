@@ -14,3 +14,9 @@ L'algorithme de construction de la matrice d'adjence s'organise comme suit:
 2. Calcul de la matrice $A_{long-lat}$, considérée comme la distance euclidienne entre les pays.
 
 ### Etape 2: Matrice $A_{DTW}$
+- **Entrée :**
+    - \( X \): Matrice du taux de mortalité de dimension [n_{pays}, n_{times}, n_{ages}]
+
+- **Calculs :**
+    1. Appliquer une ACP sur la dimension de l'âge et récupérer la première composante principale pour chaque pays. Cela transforme donc la matrice X en une matrice X' de taille [n_{pays}, n_{times}]
+    2. 
