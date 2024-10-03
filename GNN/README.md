@@ -39,4 +39,4 @@ _ **Sortie :**
 
 ### Etape 4: Matrice d'adjacence:
     - Faire le produit de Hadamard de chacune des trois matrices précédentes:
-    $$A = A_{long-lat} * A_{DTW} * A_{ada}$$
+    $$ A = A_{long-lat} * A_{DTW} * A_{ada} $$
