@@ -44,10 +44,10 @@ _ **Sortie :**
 
 ## Propapagation de message (Réseau de neurone graphique):
 Une fois la matrice d'adjacence calculée, il faut mettre à jour la matrice de taux de mortalité au niveau de chaque pays en considérant le voisinage de ces derniers. Cela se fait comme suit:
-$$ H^{l+1} = \sigma(\hat{D}^{-1/2} \hat{A} \hat{D}^{-1/2} H^l W^{l} + b^l) $$
+$H^{l+1} = \sigma(\hat{D}^{-1/2} \hat{A} \hat{D}^{-1/2} H^l W^{l} + b^l) $
 où:
 - $\hat{A} = A + I$ cela permet de prendre en compte l'information au niveau du noeud cible lors de la mise à jour; $I$ étant la matrice identité
 - $\hat{D}$ réprésente la matrice de degré de $\hat{A}$ dans ce cas. Mais dans l'étude de base, cela représente la matrice angulaire entre les lignes ou colonnes de $\hat{A}$.
-- $H^l$ représente l'information au niveau des noeuds à l'itération $l$. H^0 = X. Rappelons que la dimension de l'âge est considérée comme celle des features et la dimension du temps comme celle des observations.
-- $W^l \in \mathbb{R}^{d_l \times d_{l+1}} $ représente la matrice de poids; où $d_l$ est la dimension des features pour $H^l$.
-- $b^l \in $ \mathbb{R}^{d_l}$ représente la matrice de biais.
+- $H^l$ représente l'information au niveau des noeuds à l'itération $l$. $H^0 = X$. Rappelons que la dimension de l'âge est considérée comme celle des features et la dimension du temps comme celle des observations.
+- $W^l \in \mathbb{R}^{d_l \times d_{l+1}}$ représente la matrice de poids; où $d_l$ est la dimension des features pour $H^l$.
+- $b^l \in \mathbb{R}^{d_l}$ représente la matrice de biais.
