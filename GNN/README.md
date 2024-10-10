@@ -4,7 +4,9 @@
  Ce tuto décrit le modèle GT-A avec une matrice d'adjence construite à partir de la matrice de dégrés au lieu de la matrice angulaire. Dans le cygle GT-A, G est mis pour graphique, T pour Transformer, et A pour Adaptative. Dans ce problème, on considère l'ensemble des pays comme un graphe dont les noeuds sont les pays, représentés par leur matrice de taux de mortalité. De ce faire, on arrive à mettre à jour l'information(matrice de taux de mortalité) de chaque pays en considérant l'information de leur voisinage. Le voisinage est défini dans ce cas à partir d'une matrice d'adjacence construite à partir des coordonnées géographiques et des taux de mortalité de chaque pays.
 
 ## Base de données
-La base Human Mortality Database est celle qui a été utilisée pour ce travail. Dans cette base, on a considéré au total 22 pays et pour chaque pays, on considère c'est juste le taux de mortalité qui est considéré.
+La base Human Mortality Database est celle qui a été utilisée pour ce travail. Dans cette base, on a considéré au total 24 pays et pour chaque pays, on considère juste le taux de mortalité qui est considéré.
+
+Les données présentes des valeurs abbérantes (des taux de mortalité plus grands que 1, des taux de mortalité très faible au point d'être très éloigné de la norme). Pour la détection de ces outliers, on est passé aux graphiques du logarithme des taux de mortalité par pays en fonction de l'âge et de ce faire, les valeurs plus grandes que 0(car le taux de mortalité est censé être inférieur à 1) et plus petites que -15 correspondaient à des valeurs abbérantes. Ces valeurs ont été remplacées par la moyenne leurs homologues non abbérantes.
 
 ## Construction de la matrice d'adjacence
 L'algorithme de construction de la matrice d'adjence s'organise comme suit:

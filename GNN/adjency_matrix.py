@@ -2,7 +2,9 @@ import numpy as np
 import torch
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 
@@ -81,11 +83,34 @@ class AdaptativeMatrix():
         X is n_countries x n_times x n_ages tensors which contains mortality rates
         """
         AR = AgeReduction()
-        K = AR.age_reduction(X) # K is n_countries x n_times tensor
+        X_red = AR.age_reduction(X) # K is n_countries x n_times tensor
 
         # Application of KMeans for clustering
-        KM = KMeans(n_clusters=3,random_state=0)
-        KM.fit(K)
-        clusters = KM.predict(K)
+        KM = KMeans(n_clusters=2,random_state=0)
+        KM.fit(X_red)
+        clusters = KM.predict(X_red)
+
+
+        # Méthode du coude : tester différents k et calculer l'inertie
+        inertia = []
+        score = []
+        K = range(2, 10)
+        for k in K:
+            kmeans = KMeans(n_clusters=k)
+            kmeans.fit(X_red)
+            inertia.append(kmeans.inertia_)
+
+        # Calcul du silhouette score
+            y_kmeans = kmeans.fit_predict(X_red)
+            score.append(silhouette_score(X_red, y_kmeans))
+
+        # Tracer l'inertie en fonction de k pour repérer le coude
+        plt.figure(figsize=(8, 5))
+        plt.plot(K, inertia, 'bx-')
+        plt.plot(K, score, 'bx-')
+        plt.xlabel('Nombre de clusters (k)')
+        plt.ylabel('Inertie')
+        plt.title('Méthode du coude pour déterminer le k optimal')
+        plt.show()
 
         return clusters
